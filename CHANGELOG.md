@@ -5,6 +5,7 @@ Changelog
 [Full Changelog](https://github.com/vcr/vcr/compare/v6.3.0...v6.3.1)
 
  - [fix] Fix regression reported by @myronmarston in #1031, by requiring test dependency faraday-multipart in tests only. (#1032) Thanks, @colinbruce!
+ - [new] Converted to Crystal on Dec 1, 2025
 
 ## 6.3.0 (Aug 19, 2024)
 [Full Changelog](https://github.com/vcr/vcr/compare/v6.2.0...v6.3.0)
@@ -42,12 +43,12 @@ Changelog
 - [fix] Use `YAML.unsafe_load` if available to load cassette data (better compatibility with Psych 4.0). (#911) by @casperisfine
 - [patch] Improve error message for syntax error in ERB-using cassettes (#909) by @sambostock
 - [patch] Handle `use_cassette(..., erb: {})` (#908) by @sambostock
-- [fix] Use fiber-local for `global_hook_disabled_requests` (#907) by @jhawthorn 
+- [fix] Use fiber-local for `global_hook_disabled_requests` (#907) by @jhawthorn
 - [docs] Document the RSpec cassette name shorthand (#821) by @nicolasiensen
 - [fix] Fix the behavior of the option re_record_interval "none" (#824) by @nicolasiensen
 - [fix] Fix compatibility with frozen string literals (#832) by @casperisfine
 - [fix] [Transforms ERB hash keys to symbol, in case string (#833) by @z1lk
-- [fix] Support Cucumber-Ruby v4 and later (#845) by @brasmusson 
+- [fix] Support Cucumber-Ruby v4 and later (#845) by @brasmusson
 - [patch] Extract `#vcr_cassette_name_for` (#882) by @dabroz
 - [fix] Fix CI to use GitHub Actions (#883) by @bradshjg
 - [new] Add `#localhost_ignored?` to request_ignorer (#895) by @ThHareau
