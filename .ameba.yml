@@ -1,0 +1,22 @@
+Excluded:
+- lib/
+- script/
+- docs/
+- features/
+- spec/fixtures/
+- references
+
+Lint/SpecFilename:
+  Excluded:
+    - spec/fixtures/**/*
+    - spec/spec_helper.cr
+    - spec/support/**/*
+
+Naming/BlockParameterName:
+  Enabled: false
+
+Performance/AnyInsteadOfEmpty:
+  Enabled: false
+
+Lint/UnusedArgument:
+  Enabled: false

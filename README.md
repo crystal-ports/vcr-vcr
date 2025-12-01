@@ -1,125 +1,116 @@
-vcr
-===
-
-[![CI status](https://github.com/vcr/vcr/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/vcr/vcr/actions/workflows/test.yml)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/vcr/vcr.svg?style=flat-square)](http://github.com/vcr/vcr/releases)
-[![Version](https://img.shields.io/gem/v/vcr.svg?style=flat-square)](https://rubygems.org/gems/vcr)
-[![OpenCollective](https://opencollective.com/vcr/backers/badge.svg?style=flat-square)](https://opencollective.com/vcr#backer)
-[![OpenCollective](https://opencollective.com/vcr/sponsors/badge.svg?style=flat-square)](https://opencollective.com/vcr#sponsor)
-
+vcr.cr
+======
 
 Record your test suite's HTTP interactions and replay them during future test runs for fast, deterministic, accurate tests.
 
+This is a **Crystal** port of the popular Ruby [VCR](https://github.com/vcr/vcr) gem.
+
 **Help Wanted**
 
-We're looking for more maintainers. If you'd like to help maintain a well-used gem please spend some time reviewing pull requests, issues, or participating in discussions.
+We're looking for more maintainers. If you'd like to help maintain a well-used shard please spend some time reviewing pull requests, issues, or participating in discussions.
+
+Installation
+============
+
+Add this to your `shard.yml`:
+
+```yaml
+dependencies:
+  vcr:
+    github: crystal-ports/vcr-vcr
+```
+
+Then run:
+
+```console
+shards install
+```
 
 Usage
 =====
 
-``` ruby
-require 'rubygems'
-require 'test/unit'
-require 'vcr'
+```crystal
+require "spec"
+require "vcr"
 
 VCR.configure do |config|
   config.cassette_library_dir = "fixtures/vcr_cassettes"
-  config.hook_into :webmock
+  config.hook_into :http_client
 end
 
-class VCRTest < Test::Unit::TestCase
-  def test_example_dot_com
+describe "VCR Example" do
+  it "records and replays HTTP interactions" do
     VCR.use_cassette("synopsis") do
-      response = Net::HTTP.get_response(URI('http://www.iana.org/domains/reserved'))
-      assert_match /Example domains/, response.body
+      response = HTTP::Client.get("http://www.iana.org/domains/reserved")
+      response.body.should contain("Example domains")
     end
   end
 end
 ```
 
-Run this test once, and VCR will record the HTTP request to `fixtures/vcr_cassettes/synopsis.yml`. Run it again, and VCR will replay the response from iana.org when the HTTP request is made. This test is now fast (no real HTTP requests are made anymore), deterministic (the test will continue to pass, even if you are offline, or iana.org goes down for maintenance) and accurate (the response will contain the same headers and body you get from a real request). You can use a different cassette library directory (e.g., "test/vcr_cassettes").
+Run this test once, and VCR will record the HTTP request to `fixtures/vcr_cassettes/synopsis.yml`. Run it again, and VCR will replay the response from iana.org when the HTTP request is made. This test is now fast (no real HTTP requests are made anymore), deterministic (the test will continue to pass, even if you are offline, or iana.org goes down for maintenance) and accurate (the response will contain the same headers and body you get from a real request). You can use a different cassette library directory (e.g., "spec/vcr_cassettes").
 
 NOTE: To avoid storing any sensitive information in cassettes, check out [Filter Sensitive Data](https://benoittgt.github.io/vcr/#/configuration/filter_sensitive_data) in the documentation.
-
-**Rails and Minitest:**
-Do *not* use 'test/fixtures' as the directory if you're using Rails and Minitest (Rails will instead transitively load any files in that directory as models).
 
 **Features**
 
   * Automatically records and replays your HTTP interactions with minimal setup/configuration code.
-  * Supports and works with the HTTP stubbing facilities of multiple libraries. Currently, the following are supported:
-    * [WebMock](https://github.com/bblimke/webmock)
-    * [Typhoeus](https://github.com/typhoeus/typhoeus)
-    * [Faraday](https://github.com/lostisland/faraday)
-    * [Excon](https://github.com/excon/excon)
-  * Supports multiple HTTP libraries:
-    * [Patron](https://github.com/toland/patron) (when using WebMock)
-    * [Curb](https://github.com/taf2/curb) (when using WebMock -- only supports Curl::Easy at the moment)
-    * [HTTPClient](https://github.com/nahi/httpclient) (when using WebMock)
-    * [em-http-request](https://github.com/igrigorik/em-http-request) (when using WebMock)
-    * [Net::HTTP](http://www.ruby-doc.org/stdlib/libdoc/net/http/rdoc/index.html) (when using WebMock)
-    * [Typhoeus](https://github.com/typhoeus/typhoeus) (Typhoeus::Hydra, but not Typhoeus::Easy or Typhoeus::Multi)
-    * [Excon](https://github.com/geemus/excon)
-    * [Faraday](https://github.com/lostisland/faraday)
-    * And of course any library built on Net::HTTP, such as [Mechanize](https://github.com/sparklemotion/mechanize), [HTTParty](https://github.com/jnunemaker/httparty) or [Rest Client](https://github.com/rest-client/rest-client).
+  * Hooks into Crystal's standard `HTTP::Client` library.
   * Request matching is configurable based on HTTP method, URI, host, path, body and headers, or you can easily implement a custom request matcher to handle any need.
   * The same request can receive different responses in different tests--just use different cassettes.
   * The recorded requests and responses are stored on disk in a serialization format of your choice (currently YAML and JSON are built in, and you can easily implement your own custom serializer) and can easily be inspected and edited.
-  * Dynamic responses are supported using ERB.
+  * Dynamic responses are supported using ECR (Embedded Crystal).
   * Optionally re-records cassettes on a configurable regular interval to keep them fresh and current.
   * Disables all HTTP requests that you don't explicitly allow.
-  * Simple Cucumber integration is provided using tags.
-  * Includes convenient RSpec macros and integration with RSpec 2 metadata.
-  * Known to work well with many popular Ruby libraries including RSpec 1 & 2, Cucumber, Test::Unit, Capybara, Mechanize, Rest Client and HTTParty.
-  * Includes Rack and Faraday middleware.
+  * Includes convenient [Spectator](https://gitlab.com/arctic-fox/spectator) integration with metadata support.
+  * Known to work well with Crystal's testing frameworks including Spectator and minitest.cr.
   * Supports filtering sensitive data from the response body
 
 The docs come in two flavors:
 
-  * The [usage docs](https://benoittgt.github.io/vcr) contain example-based documentation (VCR's Cucumber suite, in fact). It's a good place to look when you are first getting started with VCR, or if you want to see an example of how to use a feature.
-  * The [rubydoc.info docs](https://www.rubydoc.info/gems/vcr/frames) contain API documentation. The API docs contain detailed info about all of VCR's public API.
-  * See the [CHANGELOG](https://github.com/vcr/vcr/blob/master/CHANGELOG.md) doc for info about what's new and changed.
+  * The [usage docs](https://benoittgt.github.io/vcr) contain example-based documentation. It's a good place to look when you are first getting started with VCR, or if you want to see an example of how to use a feature.
+  * See the [CHANGELOG](https://github.com/crystal-ports/vcr-vcr/blob/master/CHANGELOG.md) doc for info about what's new and changed.
 
-There is also a Railscast (from 2011), which will get you up and running in no-time http://railscasts.com/episodes/291-testing-with-vcr.
+This is a Crystal port of the original Ruby VCR library. While the API is largely similar, there are some Crystal-specific differences.
 
 **Release Policy**
 
-VCR follows the principles of [semantic versioning](https://semver.org/). The [API documentation](https://rubydoc.info/gems/vcr/frames) defines VCR's public API. Patch level releases contain only bug fixes. Minor releases contain backward-compatible new features. Major new releases contain backwards-incompatible changes to the public API.
+VCR follows the principles of [semantic versioning](https://semver.org/). Patch level releases contain only bug fixes. Minor releases contain backward-compatible new features. Major new releases contain backwards-incompatible changes to the public API.
 
-**Ruby Interpreter Compatibility**
+**Crystal Version Compatibility**
 
-VCR versions 6.x are tested on the following ruby interpreters:
+VCR.cr is tested on:
 
-  * MRI 3.3
-  * MRI 3.2
-  * MRI 3.1
-  * MRI 3.0
-  * MRI 2.7
-  * MRI 2.6
+  * Crystal 1.16.3+
 
-[VCR 6.0.0](https://github.com/vcr/vcr/releases/tag/v6.0.0) is the last version supporting >= 2.3.
-[VCR 6.1.0](https://github.com/vcr/vcr/releases/tag/v6.1.0) is the last version supporting >= 2.6.
-Upcoming releases will only explicitly support >= 2.7.
+See the `shard.yml` for the minimum required Crystal version.
 
 **Development**
 
-  * Source hosted on [GitHub](https://github.com/vcr/vcr).
-  * Direct questions and discussions on [GitHub Issues](https://github.com/vcr/vcr/issues).
-  * Report bugs/issues on [GitHub Issues](https://github.com/vcr/vcr/issues).
-  * Pull requests are very welcome! Please include spec and/or feature coverage for every patch,
+  * Source hosted on [GitHub](https://github.com/crystal-ports/vcr-vcr).
+  * Direct questions and discussions on [GitHub Issues](https://github.com/crystal-ports/vcr-vcr/issues).
+  * Report bugs/issues on [GitHub Issues](https://github.com/crystal-ports/vcr-vcr/issues).
+  * Pull requests are very welcome! Please include spec coverage for every patch,
     and create a topic branch for every separate change you make.
-  * See the [Contributing](https://github.com/vcr/vcr/blob/master/CONTRIBUTING.md)
-    guide for instructions on running the specs and features.
-  * Code quality metrics are checked by [Code Climate](https://codeclimate.com/github/vcr/vcr).
-  * Documentation is generated with [YARD](https://yardoc.org/) ([cheat sheet](https://rubydoc.info/gems/yard/file/docs/GettingStarted.md)).
-    To generate while developing:
+  * See the [Contributing](https://github.com/crystal-ports/vcr-vcr/blob/master/CONTRIBUTING.md)
+    guide for instructions on running the specs.
+  * Code quality is checked with [Ameba](https://github.com/crystal-ameba/ameba).
+
+To run specs:
 
 ```
-yard server --reload
+crystal spec
+```
+
+To run the linter:
+
+```
+./bin/ameba
 ```
 
 **Ports in Other Languages**
 
+  * [VCR](https://github.com/vcr/vcr) (Ruby - original implementation)
   * [Betamax](https://github.com/sigmavirus24/betamax) (Python)
   * [VCR.py](https://github.com/kevin1024/vcrpy) (Python)
   * [Betamax](https://github.com/thegreatape/betamax) (Go)
@@ -143,20 +134,11 @@ yard server --reload
   * [OkReplay](https://github.com/airbnb/okreplay) (Java/Android)
   * [vcr](https://github.com/ropensci/vcr) (R)
 
-**Related Projects**
+**Other Libraries in Crystal**
 
-  * [Mr. Video](https://github.com/quidproquo/mr_video) (Rails engine for managing VCR cassettes and episodes)
-
-
-**Similar Libraries in Ruby**
-
-  * [Ephemeral Response](https://github.com/sandro/ephemeral_response)
-  * [Net::HTTP Spy](https://github.com/martinbtt/net-http-spy)
-  * [NetRecorder](https://github.com/chrisyoung/netrecorder)
-  * [Puffing Billy](https://github.com/oesmith/puffing-billy)
-  * [REST-assured](https://github.com/artemave/REST-assured)
-  * [Stale Fish](https://github.com/jsmestad/stale_fish)
-  * [WebFixtures](https://github.com/trydionel/web_fixtures)
+  * [eighttrack](https://github.com/russ/eighttrack)
+  * [hi8.cr](https://github.com/vonKingsley/hi8.cr)
+  * [webmock.cr](https://github.com/manastech/webmock.cr)
 
 
 Credits

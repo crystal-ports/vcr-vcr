@@ -1,0 +1,29 @@
+name: vcr
+version: 6.3.1
+
+authors:
+  - Myron Marston
+  - Kurtis Rainbolt-Greene
+  - Olle Jonsson
+
+description: |
+  Record your test suite's HTTP interactions and replay them during
+  future test runs for fast, deterministic, accurate tests.
+
+license: https://github.com/vcr/vcr/blob/master/LICENSE
+
+crystal: ">= 1.0.0"
+
+dependencies:
+  graphql:
+    github: graphql-crystal/graphql
+
+development_dependencies:
+  spectator:
+    github: icy-arctic-fox/spectator
+  ameba:
+    github: crystal-ameba/ameba
+
+targets:
+  vcr:
+    main: src/vcr.cr
