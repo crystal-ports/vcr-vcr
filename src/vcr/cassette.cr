@@ -224,7 +224,7 @@ module VCR
     #     end
     #   end
     def originally_recorded_at
-      @originally_recorded_at ||= previously_recorded_interactions.map &.recorded_at.min
+      @originally_recorded_at ||= previously_recorded_interactions.map(&.recorded_at).min?
     end
 
     # @return [Boolean] false unless wrapped with LinkedCassette
