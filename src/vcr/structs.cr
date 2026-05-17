@@ -94,6 +94,8 @@ module VCR
         if h = hash_or_string.as_h?
           if h["base64_string"]?
             Base64.decode_string(h["base64_string"].to_s)
+          elsif (s = h["string"]?) && binary?(h["encoding"]?)
+            decode_inline_binary(s.to_s)
           else
             h["string"]?.try(&.to_s)
           end
@@ -103,12 +105,29 @@ module VCR
       when Hash
         if hash_or_string.has_key?("base64_string")
           Base64.decode_string(hash_or_string["base64_string"].to_s)
+        elsif hash_or_string.has_key?("string") && binary?(hash_or_string["encoding"]?)
+          decode_inline_binary(hash_or_string["string"].to_s)
         else
           hash_or_string["string"]?.try(&.to_s)
         end
       else
         hash_or_string.to_s
       end
+    end
+
+    # Ruby VCR writes binary bodies with YAML's !binary tag, which Crystal's
+    # YAML parser hands us as the raw base64 string. Decode it ourselves
+    # when the cassette declares ASCII-8BIT / BINARY encoding.
+    private def self.binary?(enc) : Bool
+      return false if enc.nil?
+      s = enc.to_s.upcase
+      s == "ASCII-8BIT" || s == "BINARY"
+    end
+
+    private def self.decode_inline_binary(s : String) : String
+      Base64.decode_string(s.gsub(/\s+/, ""))
+    rescue
+      s
     end
 
     def self.headers_from(headers_hash) : Hash(String, Array(String))
